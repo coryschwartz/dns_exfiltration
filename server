@@ -1,7 +1,6 @@
-# /usr/bin/env python
+#!/usr/bin/env python
 
 # Written by Cory Schwartz
-# Inspired by https://github.com/m57/dnsteal
 
 # Just for reference, the following diagrams
 # are taken from RFC1035:

