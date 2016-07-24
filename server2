@@ -20,8 +20,10 @@ class Exfiltrator(BaseRequestHandler, object):
     '''
     def __init__(self, *args):
         self.q_processors = {
-            1: self._A,
-	    15: self._MX
+            1: self._A,      # A record
+	    12: self._MX,    # PTR record
+	    15: self._MX,    # MX record
+	    28: self._A      # AAAA record
 	    }
 	super(Exfiltrator, self).__init__(*args)
     def _A(self, name):
