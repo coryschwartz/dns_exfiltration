@@ -1,6 +1,7 @@
 package DefConGui;
 
 import java.util.List;
+import java.util.Arrays;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridBagLayout;
@@ -107,12 +108,13 @@ public class DefConGui extends JFrame{
             String filename = currentCmd.getText();
             System.out.println("Uploading " + filename);
             FileInputStream in;
-	    int c;
 	    byte [] buf = new byte[30];
+	    int c;
             try {
                 in = new FileInputStream(filename);
 		while (( c = in.read(buf) ) != -1) {
                     send(buf, "webapp", "def.con");
+		    Arrays.fill(buf, (byte) 0);
                 }
                 in.close();
             } catch ( IOException e ) {
