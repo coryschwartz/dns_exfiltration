@@ -25,9 +25,15 @@ class Exfiltrator(BaseRequestHandler, object):
             1: self._A,      # A record
 	    12: self._MX,    # PTR record
 	    15: self._MX,    # MX record
-	    28: self._A      # AAAA record
+	    28: self._AAAA   # AAAA record
 	    }
 	super(Exfiltrator, self).__init__(*args)
+    def _AAAA(self, name):
+        '''
+        To avoid clients that submit A and AAAA records,
+        These are ignored.
+        '''
+	return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
     def _A(self, name):
         '''
 	A Records.
