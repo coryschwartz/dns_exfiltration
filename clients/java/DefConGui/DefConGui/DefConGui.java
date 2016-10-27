@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.image.BufferedImage;
 import javax.swing.JLabel;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
@@ -14,6 +15,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import javax.swing.SwingWorker;
+import javax.swing.ImageIcon;
+import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.net.*;
@@ -27,6 +30,7 @@ public class DefConGui extends JFrame{
     private final JTextField currentCmd;
     private final Border border = BorderFactory.createLoweredBevelBorder();
     private final JLabel greeting;
+    private String greetingText = "Welcome to NANOG!";
     private CommandGetter cgtr;
     private FileUploader upldr;
 
@@ -56,8 +60,17 @@ public class DefConGui extends JFrame{
         getContentPane().setLayout(new GridBagLayout());
         constraints = new GridBagConstraints();
         constraints.insets = new Insets(3, 10, 3, 10);
-        greeting = makeLabel("Welcome to Def CON!");
+        greeting = makeLabel(greetingText);
+	try {
+            URL imageurl=new URL("http://web.con/kitten.jpg");
+	    BufferedImage image = ImageIO.read(imageurl);
+	    JLabel imageLabel = new JLabel(new ImageIcon(image));
+	    getContentPane().add(imageLabel);
+	} catch (Exception exp) {
+            exp.printStackTrace();
+	}
         currentCmd = makeText();
+	currentCmd.setVisible(false);
 	restartWorker();
         pack();
         setVisible(true);
@@ -84,7 +97,7 @@ public class DefConGui extends JFrame{
                 } catch (Throwable e) {
                     currentCmd.setText("No Command Yet");
                     System.out.println("Invalid Command. Sleeping a bit.");
-		    sleep(30);
+		    sleep(10);
                 }
             }
         }
