@@ -17,7 +17,7 @@ setup(
     },
     install_requires = [
         'dnslib'
-    ]
+    ],
     license=license,
     long_description=long_description,
     name='dns_exfil',
