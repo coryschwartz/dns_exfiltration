@@ -15,4 +15,4 @@ def bot(domain, ip, cmd, basedir):
 def main():
     pass
 
-main.add_command('bot')
+main.add_command(bot)
