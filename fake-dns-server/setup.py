@@ -1,4 +1,5 @@
 from distutils.core import setup
+from setuptools import find_packages
 
 with open('LICENSE.txt') as f:
     license = f.read()
@@ -21,7 +22,7 @@ setup(
     license=license,
     long_description=long_description,
     name='dns_exfil',
-    packages=['dns_exfil'],
+    packages=find_packages,
     version='3',
 
 )
