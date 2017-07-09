@@ -1,7 +1,3 @@
-#!/usr/bin/python3.6
-
-# Written by Cory Schwartz
-
 import base64
 from time import sleep
 from dnslib import DNSRecord, RR, QTYPE, A, MX
