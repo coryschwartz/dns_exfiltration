@@ -13,7 +13,5 @@ def bot(domain, ip, cmd, basedir):
 
 @click.group()
 def main():
-    print('DNS Exfil Server Main')
 
-if __name__ == '__main__':
-    main.add_command('bot')
+main.add_command('bot')
