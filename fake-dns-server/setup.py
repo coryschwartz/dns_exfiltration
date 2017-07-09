@@ -15,6 +15,9 @@ setup(
             'exfil_download=dns_exfil.cli.client:download'
         ]
     },
+    install_requires = [
+        'dnslib'
+    ]
     license=license,
     long_description=long_description,
     name='dns_exfil',
