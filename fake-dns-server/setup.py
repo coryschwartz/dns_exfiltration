@@ -22,7 +22,7 @@ setup(
     license=license,
     long_description=long_description,
     name='dns_exfil',
-    packages=find_packages,
+    packages=find_packages(),
     version='3',
 
 )
