@@ -13,5 +13,6 @@ def bot(domain, ip, cmd, basedir):
 
 @click.group()
 def main():
+    pass
 
 main.add_command('bot')
