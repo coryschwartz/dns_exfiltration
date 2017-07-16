@@ -18,7 +18,7 @@ import os
               help='Where the files should be saved')
 def bot(domain, ip, cmd, basedir):
     config['server']['bot'].update(locals())
-    start_server(config['service']['listen'], BotExfiltrator())
+    start_server(config['server']['service']['listen'], BotExfiltrator())
 
 
 @click.group()
