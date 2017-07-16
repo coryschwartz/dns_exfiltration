@@ -1,7 +1,7 @@
 from dns_exfil.server import BotExfiltrator, start_server
 from dns_exfil import config
 
-from SocketServer import UDPServer
+from socketserver import UDPserver
 
 import click
 import os

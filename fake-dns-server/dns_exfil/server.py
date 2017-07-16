@@ -2,7 +2,7 @@ import base64
 import socket
 
 from dnslib import DNSRecord, RR, QTYPE, A, MX
-from SocketServer import BaseRequestHandler
+from socketserver import BaseRequestHandler
 
 class DNSServer(BaseRequestHandler):
     '''
