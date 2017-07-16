@@ -6,7 +6,7 @@ from os import getcwd
 config = {
     'server': {
         'service': {
-            'listen': 0.0.0.0
+            'listen': '0.0.0.0'
         },
         'bot': {
             'domain': 'def.con',
