@@ -108,7 +108,7 @@ class ChunkDownloader(InterceptDefaultResolver):
         It it prints the names and size of the files being served.
         '''
         base = self.context['basedir']
-        fileinfo = [','.join([fn, os.stat(fn).st_size]) for fn in os.listdir(base)]
+        fileinfo = [','.join([fn, str(os.stat(fn).st_size)]) for fn in os.listdir(base)]
         index = '\n'.join(fileinfo)
         return index
         
