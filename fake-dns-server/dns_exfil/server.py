@@ -25,7 +25,7 @@ class DNSServer(BaseRequestHandler):
             15: self.MX,    # MX record
             28: self.AAAA   # AAAA record
             }
-        super(DNSServer, self).__init__()
+        super(DNSServer, self).__init__(request, client_address, server)
     def AAAA(self, name):
         pass
         
@@ -45,8 +45,8 @@ class DNSServer(BaseRequestHandler):
         socket.sendto(reply.pack(), self.client_address)
 
 class BotExfiltrator(DNSServer):
-    def __init__(self, context):
-        super(BotExfiltrator, self).__init__(context=context)
+    def __init__(self):
+        super(BotExfiltrator, self).__init__(request, client_address, server)
 
     def AAAA(self, name):
         return RR(name, QTYPE.A, rdata=A(), ttl=0)
