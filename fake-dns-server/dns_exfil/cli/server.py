@@ -19,7 +19,7 @@ import os
 def bot(domain, ip, cmd, basedir):
     context = config['server']['bot']
     context.update(locals())
-    start_server(config['server']['service']['listen'], BotExfiltrator(context=context))
+    start_server(config['server']['service']['listen'], BotExfiltrator)
 
 
 @click.group()

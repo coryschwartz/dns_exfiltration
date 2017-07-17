@@ -1,5 +1,6 @@
 import base64
-import socket
+
+from dns_exfil import config
 
 from dnslib import DNSRecord, RR, QTYPE, A, MX
 from socketserver import BaseRequestHandler
@@ -10,8 +11,11 @@ class DNSServer(BaseRequestHandler):
     Defines default behavior, which acts as a normal DNS server
     Unusual behavior modes should be defined in a subclass of this server.
     '''
-    def __init__(self, context):
-        self.context = context
+    def __init__(self, request, client_address, server):
+        # link the piece of global config relevant to this instance
+        context_name = type(self).__name__.lower()
+        self.context = config['server'][context_name]
+
         # Maps the numerical DNS query type to the handler
         # There are a lot of relevant RFC's.
         # https://en.wikipedia.org/wiki/List_of_DNS_record_types
