@@ -84,4 +84,4 @@ class BotExfiltrator(InterceptDefaultResolver):
 
 def start_server(resolver):
     server = DNSServer(resolver=resolver, **config['server']['service'])
-    server.start_thread()
+    server.start()
