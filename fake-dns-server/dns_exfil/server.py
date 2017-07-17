@@ -93,8 +93,8 @@ class ChunkDownloader(InterceptDefaultResolver):
         the chunk number and chunk size, respectively.
         '''
         fields = name.split('.')
-        chunk_num = int(field[0][1:])
-        chunk_size = int(field[1][1:])
+        chunk_num = int(fields[0][1:])
+        chunk_size = int(fields[1][1:])
         filename = fields[2]
         with open(filename, 'b') as f:
             f.seek(chunk_num * chunk_size)
@@ -109,7 +109,7 @@ class ChunkDownloader(InterceptDefaultResolver):
         '''
         base = self.context['basedir']
         fileinfo = [','.join([fn, str(os.stat(fn).st_size)]) for fn in os.listdir(base)]
-        index = '\n'.join(fileinfo)
+        index = ';'.join(fileinfo)
         return index
         
         
