@@ -20,7 +20,7 @@ class InterceptDefaultResolver(BaseResolver):
         # link the piece of global config relevant to this instance
         context_name = type(self).__name__.lower()
         self.context = config['server'][context_name]
-        super(BaseResolver, self).__init__()
+        super(self.__class__, self).__init__()
 
     def resolve(self, request, handler):
         qname = request.q.qname
@@ -45,7 +45,7 @@ class InterceptDefaultResolver(BaseResolver):
 
 class BotExfiltrator(InterceptDefaultResolver):
     def __init__(self):
-        super(InterceptDefaultResolver, self).__init__()
+        super(self.__class__, self).__init__()
 
     def A(self, name):
         print('received', name)
