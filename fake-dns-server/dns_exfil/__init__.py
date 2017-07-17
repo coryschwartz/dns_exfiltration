@@ -28,6 +28,10 @@ config = {
             'basedir': getcwd(),
             'ttl': 0
         },
+        'chunkdownloader': {
+            'basedir': getcwd(),
+            'ttl': 6000
+        }
     },
     'client': {
     },
