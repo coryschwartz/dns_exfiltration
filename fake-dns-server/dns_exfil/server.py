@@ -23,6 +23,7 @@ class InterceptDefaultResolver(BaseResolver):
         super(BaseResolver, self).__init__()
 
     def resolve(self, request, handler):
+        print('do I get here?')
         qname = request.q.qname
         qtype = request.q.qtype
         # The QTYPE bitmaps numerical record types to it's string value
