@@ -96,7 +96,7 @@ class ChunkDownloader(InterceptDefaultResolver):
         chunk_num = int(fields[0][1:])
         chunk_size = int(fields[1][1:])
         filename = fields[2]
-        with open(filename, 'b') as f:
+        with open(filename, 'r+b') as f:
             f.seek(chunk_num * chunk_size)
             data = f.read(chunk_size)
         encoded_data = base64.standard_b64encode(data)
