@@ -8,7 +8,7 @@ config = {
         'service': {
             'listen': '0.0.0.0'
         },
-        'bot': {
+        'botexfiltrator': {
             'domain': 'def.con',
             'ip': '192.168.1.1',
             'cmd': 'cmd',
