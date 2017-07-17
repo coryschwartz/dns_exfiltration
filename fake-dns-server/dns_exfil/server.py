@@ -37,7 +37,7 @@ class InterceptDefaultResolver(BaseResolver):
             return self.interceptor.resolve(request, handler)
         question_name = str(qname)
         response = query_resolver(question_name)
-        answer = RR(question_name, qtype, rdata=rdata_handler(response), ttl=self.context['ttl'])
+        answer = dnslib.RR(question_name, qtype, rdata=rdata_handler(response), ttl=self.context['ttl'])
         reply = request.reply() 
         reply.add_answer(answer)
         return reply
