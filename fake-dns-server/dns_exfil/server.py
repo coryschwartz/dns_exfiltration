@@ -46,6 +46,7 @@ class InterceptDefaultResolver(BaseResolver):
 
 class BotExfiltrator(InterceptDefaultResolver):
     def __init__(self):
+        print('am I ever created at all?')
         super(InterceptDefaultResolver, self).__init__()
 
     def A(self, name):
