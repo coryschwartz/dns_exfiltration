@@ -100,7 +100,9 @@ class ChunkDownloader(InterceptDefaultResolver):
             f.seek(chunk_num * chunk_size)
             data = f.read(chunk_size)
         encoded_data = base64.standard_b64encode(data)
-        return '.'.join([encoded_data.decode('utf-8')].extend(fields[3:]))
+        return_fields = fields[3:]
+        return_fields.insert(0, encoded_data)
+        return '.'.join(return_fields)
 
     def TXT(self, name):
         '''
