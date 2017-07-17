@@ -16,7 +16,7 @@ class InterceptDefaultResolver(BaseResolver):
     '''
     def __init__(self):
 
-        self.interceptor InterceptResolver(**config['server']['upstream'])
+        self.interceptor = InterceptResolver(**config['server']['upstream'])
         # link the piece of global config relevant to this instance
         context_name = type(self).__name__.lower()
         self.context = config['server'][context_name]
