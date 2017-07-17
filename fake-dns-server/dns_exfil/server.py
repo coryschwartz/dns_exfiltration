@@ -3,7 +3,7 @@ import base64
 from dns_exfil import config
 
 from dnslib import DNSRecord, RR, QTYPE, A, MX
-from socketserver import BaseRequestHandler
+from socketserver import BaseRequestHandler, UDPServer
 
 class DNSServer(BaseRequestHandler):
     '''
