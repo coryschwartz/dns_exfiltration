@@ -19,7 +19,7 @@ config = {
             'intercept': [],
             'skip': [],
             'nxdomain': [],
-            'timeout': '5s'
+            'timeout': 5
         },
         'botexfiltrator': {
             'domain': 'def.con',
