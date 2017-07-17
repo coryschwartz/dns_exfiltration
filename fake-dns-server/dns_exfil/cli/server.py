@@ -22,7 +22,7 @@ def bot(domain, ip, cmd, basedir):
 @click.command()
 @click.option('--ttl', default=config['server']['chunkdownloader']['ttl'],
               help='Time To Live request for DNS caches')
-@click.option('--basedir', default=config(['server']['chunkdownloader']['basedir']),
+@click.option('--basedir', default=config['server']['chunkdownloader']['basedir'],
               help='Where files should be served from')
 def chunk(basedir, ttl):
     context = config['server']['chunkdownloader']
