@@ -15,7 +15,7 @@ import os
 @click.option('--basedir', default=config['server']['bot']['basedir'],
               help='Where the files should be saved')
 def bot(domain, ip, cmd, basedir):
-    context = config['server']['bot']
+    context = config['server']['botexfiltrator']
     context.update(locals())
     start_server(config['server']['service']['listen'], BotExfiltrator)
 
