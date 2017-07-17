@@ -42,7 +42,7 @@ class DNSServer(BaseRequestHandler):
 
 class BotExfiltrator(DNSServer):
     def __init__(self, context):
-        super(BotExfiltrator, self).__init__()
+        super(BotExfiltrator, self).__init__(context=context)
 
     def AAAA(self, name):
         return RR(name, QTYPE.A, rdata=A(), ttl=0)
