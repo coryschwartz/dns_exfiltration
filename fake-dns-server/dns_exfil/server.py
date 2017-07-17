@@ -8,7 +8,7 @@ from dnslib.intercept import InterceptResolver
 
 from socketserver import BaseRequestHandler, UDPServer
 
-class InterceptDefaultResolver(BaseResolver)
+class InterceptDefaultResolver(BaseResolver):
     '''
     Base Class for specific Exfiltrator modes
     Defines default behavior, which acts as a normal DNS server
@@ -82,6 +82,6 @@ class BotExfiltrator(InterceptDefaultResolver):
 # Run the actual server. 
 
 
-def start_server(resolver)
+def start_server(resolver):
     server = DNSServer(resolver=resolver, **config['server']['service'])
     server.start_thread()
