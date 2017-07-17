@@ -45,8 +45,11 @@ class InterceptDefaultResolver(BaseResolver):
         
 
 class BotExfiltrator(InterceptDefaultResolver):
-     def A(self, name):
-         print('received', name)
+    def __init__(self):
+        super(InterceptDefaultResolver, self).__init__()
+
+    def A(self, name):
+        print('received', name)
 
 
 
