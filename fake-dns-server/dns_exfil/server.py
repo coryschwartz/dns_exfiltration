@@ -32,7 +32,7 @@ class InterceptDefaultResolver(BaseResolver):
         # otherwise, we will just proxy the request upstream.
         try:
             query_resolver = getattr(self, dnslib.QTYPE[qtype])
-            rdata_handler = getattr(dnslib, dnslib.QTYPE[qype])
+            rdata_handler = getattr(dnslib, dnslib.QTYPE[qtype])
         except AttributeError:
             return self.interceptor.resolve(request, handler)
         question_name = str(qname)
