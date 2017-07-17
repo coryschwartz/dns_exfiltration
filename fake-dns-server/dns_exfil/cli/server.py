@@ -26,7 +26,7 @@ def bot(domain, ip, cmd, basedir):
               help='Where files should be served from')
 def chunk(basedir, ttl):
     context = config['server']['chunkdownloader']
-    contet.update(locals())
+    context.update(locals())
     start_server(ChunkDownloader())
 
 @click.group()
