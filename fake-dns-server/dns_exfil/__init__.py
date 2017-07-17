@@ -15,12 +15,12 @@ config = {
         'upstream': {
             'address': '8.8.8.8',
             'port': 53,
-            'ttl': '60s'
+            'ttl': '60s',
             'intercept': [],
             'skip': [],
             'nxdomain': [],
             'timeout': '5s'
-        }
+        },
         'botexfiltrator': {
             'domain': 'def.con',
             'ip': '192.168.1.1',
