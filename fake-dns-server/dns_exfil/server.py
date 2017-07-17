@@ -21,7 +21,7 @@ class DNSServer(BaseRequestHandler):
             15: self.MX,    # MX record
             28: self.AAAA   # AAAA record
             }
-        super(Exfiltrator, self).__init__()
+        super(DNSServer, self).__init__()
     def AAAA(self, name):
         pass
         
