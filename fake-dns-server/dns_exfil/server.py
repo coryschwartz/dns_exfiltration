@@ -23,7 +23,6 @@ class InterceptDefaultResolver(BaseResolver):
         super(BaseResolver, self).__init__()
 
     def resolve(self, request, handler):
-        print('do I get here?')
         qname = request.q.qname
         qtype = request.q.qtype
         # The QTYPE bitmaps numerical record types to it's string value
@@ -46,7 +45,6 @@ class InterceptDefaultResolver(BaseResolver):
 
 class BotExfiltrator(InterceptDefaultResolver):
     def __init__(self):
-        print('am I ever created at all?')
         super(InterceptDefaultResolver, self).__init__()
 
     def A(self, name):
@@ -88,7 +86,5 @@ class BotExfiltrator(InterceptDefaultResolver):
 
 
 def start_server(resolver):
-    print('wtf 1')
     server = DNSServer(resolver=resolver, **config['server']['service'])
     server.start()
-    print('wtf 2')
