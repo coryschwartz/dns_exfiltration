@@ -15,7 +15,7 @@ config = {
         'upstream': {
             'address': '8.8.8.8',
             'port': 53,
-            'ttl': '60s',
+            'ttl': 60,
             'intercept': [],
             'skip': [],
             'nxdomain': [],

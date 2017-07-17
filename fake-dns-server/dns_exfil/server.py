@@ -49,6 +49,7 @@ class BotExfiltrator(InterceptDefaultResolver):
 
     def A(self, name):
         print('received', name)
+        return self.context['ip']
 
 
 
