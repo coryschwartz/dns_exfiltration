@@ -45,7 +45,7 @@ class DNSServer(BaseRequestHandler):
         socket.sendto(reply.pack(), self.client_address)
 
 class BotExfiltrator(DNSServer):
-    def __init__(self):
+    def __init__(self, request, client_address, server):
         super(BotExfiltrator, self).__init__(request, client_address, server)
 
     def AAAA(self, name):
