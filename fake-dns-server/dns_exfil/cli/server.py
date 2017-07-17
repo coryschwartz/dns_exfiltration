@@ -17,7 +17,7 @@ import os
 def bot(domain, ip, cmd, basedir):
     context = config['server']['botexfiltrator']
     context.update(locals())
-    start_server(BotExfiltrator)
+    start_server(BotExfiltrator())
 
 
 @click.group()
