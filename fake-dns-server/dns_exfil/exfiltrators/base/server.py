@@ -25,7 +25,7 @@ class InterceptDefaultResolver(BaseResolver):
         self.context = config['server'][context_name]
         super().__init__()
 
-    def answer(qname, qtype):
+    def answer(self, qname, qtype):
         # The QTYPE bitmaps numerical record types to it's string value
         # For example, QTYPE[15] -> 'MX'
         # See https://en.wikipedia.org/wiki/List_of_DNS_record_types
