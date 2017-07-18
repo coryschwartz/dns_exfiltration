@@ -63,7 +63,7 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             real_domain_name = '.'.join(str(qname).split('.')[-2:])
             real_request = request
             real_request.q = dnslib.DNSQuestion(real_domain_name, qtype)
-            reply = self.interceptor.resolve(real_request, qtype), handler)
+            reply = self.interceptor.resolve(real_request, handler)
             reply.add_answer(answer)
         except:
             reply = self.interceptor.resolve(request, handler)
