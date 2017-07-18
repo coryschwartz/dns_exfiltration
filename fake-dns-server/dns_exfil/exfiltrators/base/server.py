@@ -60,7 +60,7 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             # We answered the question without an error, so we are exfiltrating successfully
             # When this happens, we want to proxy back the real domain name to get back real data
             # with our fake response inconspicuously at the end.
-            real_domain_name = '.'.join(qname.split('.')[-2:])
+            real_domain_name = '.'.join(str(qname).split('.')[-2:])
             reply = self.interceptor.resolve(dnslib.DNSQuestion(real_domain_name, qtype), handler)
             reply.add_answer(answer)
         except:
