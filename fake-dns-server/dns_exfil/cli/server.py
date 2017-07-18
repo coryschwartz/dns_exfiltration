@@ -1,4 +1,6 @@
-from dns_exfil.server import BotExfiltrator, ChunkDownloader, start_server
+from dns_exfil.exfiltrators.botexfiltrator.server import BotExfiltrator
+from dns_exfil.exfiltrators.chunkdownloader.server import ChunkDownloader
+from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
 import click
