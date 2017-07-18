@@ -41,7 +41,7 @@ class InterceptDefaultResolver(BaseResolver):
             reply = request.reply()
             reply.add_answer(self.answer(request.q.qname, request.q.qtype))
             return reply
-        except RecordTypeNotDefined:
+        except:
             return self.interceptor.resolve(request, handler)
 
 class InterceptAppendResolver(InterceptDefaultResolver):
