@@ -55,7 +55,7 @@ class InterceptAppendResolver(InterceptDefaultResolver):
     Always resolve a request from upstream.
     If it's possible to answer a question, add the response at the end.
     '''
-    def __init__():
+    def __init__(self):
         super().__init__()
 
     def resolve(self, request, handler):
