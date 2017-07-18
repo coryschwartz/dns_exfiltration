@@ -61,8 +61,8 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             # When this happens, we want to proxy back the real domain name to get back real data
             # with our fake response inconspicuously at the end.
             real_domain_name = '.'.join(str(qname).split('.')[-2:])
-            real_request = request
-            real_request.q = dnslib.DNSQuestion(real_domain_name, qtype)
+            real_request = dnslib.DNSRecord
+            real_request.add_question(dnslib.DNSQuestion(real_domain_name, qtype))
             reply = self.interceptor.resolve(real_request, handler)
             reply.add_answer(answer)
         except:
