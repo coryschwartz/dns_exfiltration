@@ -1,3 +1,6 @@
+import base64
+import os
+
 from dns_exfil.exfiltrators.base.server import InterceptAppendResolver
 
 class ChunkDownloader(InterceptAppendResolver):

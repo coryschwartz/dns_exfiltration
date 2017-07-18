@@ -1,13 +1,8 @@
-import base64
-import os
-
 from dns_exfil import config
 
 import dnslib
 from dnslib.server import DNSServer, BaseResolver
 from dnslib.intercept import InterceptResolver
-
-from socketserver import BaseRequestHandler, UDPServer
 
 class RecordTypeNotDefined(Exception):
     pass
