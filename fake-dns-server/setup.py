@@ -12,8 +12,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'exfil_serve=dns_exfil.cli.server:main',
-            'exfil_upload=dns_exfil.cli.client:upload',
-            'exfil_download=dns_exfil.cli.client:download'
+            'exfil_client=dns_exfil.cli.client:main'
         ]
     },
     install_requires = [
