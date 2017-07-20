@@ -31,7 +31,7 @@ def printerrors(func):
             if len(e.args) > 0:
                 message = message + str(e.args)
             sys.stderr.write(message)
-            errheader = dnslib.DNSHeader(rcode=RCODE.SERVFAIL)
+            errheader = dnslib.DNSHeader(rcode=dnslib.RCODE.SERVFAIL)
             err = dnslib.DNSRecord(header=errheader)
             return err
     return wrapper
