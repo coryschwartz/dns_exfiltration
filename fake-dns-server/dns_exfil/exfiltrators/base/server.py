@@ -29,7 +29,7 @@ def printerrors(func):
         except BaseException as e:
             message = '::- Server Error -:: '
             if len(e.args) > 0:
-                message = message + e.args[0]
+                message = message + str(e.args)
             sys.stderr.write(message)
             errheader = dnslib.DNSHeader(rcode=RCODE.SERVFAIL)
             err = dnslib.DNSRecord(header=errheader)
