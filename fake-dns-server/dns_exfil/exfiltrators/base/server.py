@@ -23,17 +23,17 @@ class CannotExfiltrateError(Exception):
 
 def printerrors(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(request, handler):
         try:
-            return func(*args, **kwargs)
+            return func(request, handler)
         except BaseException as e:
             message = '::- Server Error -:: '
             if len(e.args) > 0:
                 message = message + str(e.args)
             sys.stderr.write(message)
-            errheader = dnslib.DNSHeader(rcode=dnslib.RCODE.SERVFAIL)
-            err = dnslib.DNSRecord(header=errheader)
-            return err
+            reply = request.reply()
+            reply.header.rcode = dnslib.RCODE.SERVFAIL
+            return reply
     return wrapper
 
 
