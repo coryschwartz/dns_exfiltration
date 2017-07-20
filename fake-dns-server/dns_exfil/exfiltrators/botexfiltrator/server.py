@@ -1,7 +1,10 @@
 import base64
 import os
 
-from dns_exfil.exfiltrators.base.server import InterceptDefaultResolver
+from dns_exfil.exfiltrators.base.server import (
+                                                InterceptDefaultResolver,
+                                                CannotExfiltrateError
+                                                )
 
 class BotExfiltrator(InterceptDefaultResolver):
     def __init__(self):
@@ -16,18 +19,15 @@ class BotExfiltrator(InterceptDefaultResolver):
     
         Returns an IP based on the configuration file.
         '''
-        fields = name.split('.')
-        b64data = fields[0]
-        filename = fields[1]
         try:
+            fields = name.split('.')
+            b64data = fields[0]
+            filename = fields[1]
             decoded = base64.b64decode(b64data)
         except:
-            return self.context['ip']
-        try:
-            with open(filename, 'a+b') as f:
-                f.write(base64.b64decode(b64data))
-        except:
-            pass
+            raise CannotExfiltrateError
+        with open(filename, 'a+b') as f:
+            f.write(base64.b64decode(b64data))
         return self.context['ip']
        
 
