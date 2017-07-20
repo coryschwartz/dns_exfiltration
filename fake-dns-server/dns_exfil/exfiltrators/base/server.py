@@ -25,12 +25,15 @@ def printerrors(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except BaseException as e:
             message = '::- Server Error -:: '
             if len(e.args) > 0:
                 message = message + e.args[0]
             sys.stderr.write(message)
+            errheader = dnslib.DNSHeader(rcode=RCODE.SERVFAIL)
+            err = dnslib.DNSRecord(header=errheader)
+            return err
     return wrapper
 
 
