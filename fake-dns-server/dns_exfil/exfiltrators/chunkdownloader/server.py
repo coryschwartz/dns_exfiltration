@@ -2,7 +2,7 @@ import base64
 import os
 
 from dns_exfil.exfiltrators.base.server import (
-                                                InterceptDefaultResolver,
+                                                InterceptAppendResolver,
                                                 CannotExfiltrateError
                                                 )
 
