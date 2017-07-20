@@ -23,9 +23,9 @@ class CannotExfiltrateError(Exception):
 
 def printerrors(func):
     @wraps(func)
-    def wrapper(request, handler):
+    def wrapper(inst, request, handler):
         try:
-            return func(request, handler)
+            return func(inst, request, handler)
         except BaseException as e:
             message = '::- Server Error -:: '
             if len(e.args) > 0:
