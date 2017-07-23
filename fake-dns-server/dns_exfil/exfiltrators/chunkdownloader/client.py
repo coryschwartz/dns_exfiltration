@@ -25,8 +25,7 @@ class ChunkClient(BaseClient):
         with self.open_lock:
             if filename in self.open_files.keys():
                 return self.open_files[filename]
-        mode = {True: 'wb', False: 'rb'}[writable]
-        with self.open_lock:
+            mode = {True: 'wb', False: 'rb'}[writable]
             file_handle = open(filename, mode)
             write_lock = Lock()
             self.open_files[filename] = dict(file_handle=file_handle, write_lock = write_lock)

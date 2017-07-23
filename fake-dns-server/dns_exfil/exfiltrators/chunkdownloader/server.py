@@ -1,10 +1,21 @@
 import base64
 import os
 
+from multiprocessing.dummy import Lock
+
 from dns_exfil.exfiltrators.base.server import (
                                                 InterceptAppendResolver,
                                                 CannotExfiltrateError
                                                 )
+
+# I need to write into the middle of files
+# and from the server side I can't tell when a file transfer
+# is finished, so I'm just keeping files open forever.
+# ChunkDownloader.A() just fsync's the file on every write.
+# This really should be something else..
+
+global_open_files = {}
+global_open_lock = Lock()
 
 class ChunkDownloader(InterceptAppendResolver):
     '''
@@ -17,6 +28,16 @@ class ChunkDownloader(InterceptAppendResolver):
     '''
     def __init__(self):
         super().__init__()
+
+    def file_info(self, filename, writable = False):
+        with global_open_lock:
+            if filename in global_open_files.keys():
+                return global_open_files[filename]
+            mode = {True: 'wb', False: 'rb'}[writable]
+            file_handle = open(filename, mode)
+            write_lock = Lock()
+            global_open_files[filename] = dict(file_handle=file_handle, write_lock = write_lock)
+        return self.file_info(filename, writable)
 
     def A(self, name):
         '''
@@ -33,11 +54,14 @@ class ChunkDownloader(InterceptAppendResolver):
             data = base64.b64decode(encoded_data)
         except:
             raise CannotExfiltrateError
-        with open(filename, 'w+b') as f:
-            f.seek(chunk_num * chunk_size)
-            f.write(data)
+        file_info = self.file_info(filename, writable=True)
+        handle = file_info['file_handle']
+        with file_info['write_lock']:
+            handle.seek(chunk_num * chunk_size)
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
         return self.context['ip']
-        
 
     def MX(self, name):
         '''
