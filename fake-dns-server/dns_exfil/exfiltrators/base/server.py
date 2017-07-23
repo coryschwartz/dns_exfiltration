@@ -42,12 +42,14 @@ class InterceptDefaultResolver(BaseResolver):
     If a record type is defined by a subclass, use that method to resovlve answers
     If not, pass the request up to the upstream server
     '''
-    def __init__(self):
+    def __init__(self, cache_upstream = True):
 
         self.interceptor = InterceptResolver(**config['server']['upstream'])
         # link the piece of global config relevant to this instance
         context_name = type(self).__name__.lower()
         self.context = config['server'][context_name]
+        self.use_upstream_cache = cache_upstream
+        self.upstream_cache = {}
         super().__init__()
 
     def answer(self, qname, qtype):
@@ -68,7 +70,7 @@ class InterceptDefaultResolver(BaseResolver):
         response = query_resolver(question_name)
         answer = dnslib.RR(question_name, qtype, rdata=rdata_handler(response), ttl=self.context['ttl'])
         return answer
-        
+
     @printerrors
     def resolve(self, request, handler):
         try:
@@ -76,9 +78,19 @@ class InterceptDefaultResolver(BaseResolver):
             reply.add_answer(self.answer(request.q.qname, request.q.qtype))
             return reply
         except (RecordTypeNotDefined, CannotExfiltrateError):
-            return self.interceptor.resolve(request, handler)
-
-
+            if self.use_upstream_cache:
+                reply = request.reply()
+                try:
+                    records = self.upstream_cache[(reply.q.qname, reply.q.qtype)]
+                except KeyError
+                    upstream_response = self.interceptor.resolve(request, handler)
+                    self.upstream_cache[(reply.q.qname, reply.q.qtype)] = upstream_response.rr
+                    records = upstream_response.rr
+                for record in records
+                    reply.add_answer(record)
+                return reply
+            else:
+                return self.interceptor.resolve(request, handler)
 
 class InterceptAppendResolver(InterceptDefaultResolver):
     '''
@@ -98,16 +110,21 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             # When this happens, we want to proxy back the real domain name to get back real data
             # with our fake response inconspicuously at the end.
             real_domain_name = '.'.join(str(qname).split('.')[-3:])
-            real_request = dnslib.DNSRecord()
-            real_request.add_question(dnslib.DNSQuestion(real_domain_name, qtype))
-            real_reply = self.interceptor.resolve(real_request, handler)
+            if self.use_upstream_cache:
+                try:
+                    records = self.upstream_cache[(real_domain_name, qtype)]
+                except KeyError:
+                    real_request = dnslib.DNSRecord()
+                    real_request.add_question(dnslib.DNSQuestion(real_domain_name, qtype))
+                    real_reply = self.interceptor.resolve(real_request, handler)
+                    self.upstream_cache[(real_domain_name, qtype)] = real_reply.rr
+            else:
+                    real_reply = self.interceptor.resolve(real_request, handler)
+            real_records = real_reply.rr
 
-            # Build a new record which has the ID and question of the original question
-            # and the answers from both real and fake sources.
-            return_reply = dnslib.DNSRecord()
-            return_reply.header.id = request.header.id
-            return_reply.add_question(request.q)
-            return_reply.add_answer(real_reply.a)
+            return_reply = request.reply()
+            for record in real_records:
+                return_reply.add_answer(record)
             return_reply.add_answer(answer)
         except (RecordTypeNotDefined, CannotExfiltrateError):
             # if we are here, we did not exfiltrate data.

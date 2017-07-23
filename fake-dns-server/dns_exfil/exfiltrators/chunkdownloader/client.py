@@ -36,17 +36,23 @@ class ChunkClient(BaseClient):
         record = dnslib.DNSRecord()
         record.add_question(dnslib.DNSQuestion(query_string, dnslib.QTYPE.MX))
         reply = dnslib.DNSRecord.parse(record.send(self.connect))
+        def retry():
+            time.sleep(0.5)
+            if tries > 0:
+                return self.get_chunk(chunk_no, chunk_size, filename, tries - 1)
+            else:
+                raise CannotReadChunk
+        if reply.header.rcode != dnslib.RCODE.NOERROR:
+            # Server reported an error in the response.
+            return retry()
         try:
             last_resource_data = reply.rr[-1].rdata
             encoded_message = last_resource_data.get_label().label[0]
             decoded_message = base64.b64decode(encoded_message)
             return decoded_message
         except:
-            if tries > 0:
-                time.sleep(0.5)
-                return self.get_chunk(chunk_no, chunk_size, filename, tries - 1)
-            else:
-                raise CannotReadChunk
+            # Server returned a response I don't understand.
+            return retry()
 
     def get_index(self):
         record = dnslib.DNSRecord()
@@ -59,11 +65,13 @@ class ChunkClient(BaseClient):
             name, size = csv.split(',')
             parsed.append(dict(name=name, size=size))
         return parsed
+
     def get_sizeof(self, filename):
         for entry in self.get_index():
             if entry['name'] == filename:
                 return int(entry['size'])
         raise FileNotFound
+
     def put_chunk(self, chunk_info, chunk_size, filename):
         chunk_data, chunk_number = chunk_info
         encoded_message = base64.standard_b64encode(chunk_data).decode('utf-8')
@@ -78,6 +86,7 @@ class ChunkClient(BaseClient):
                 handle.seek(seek)
                 handle.write(data)
                 handle.flush()
+
     def download(self, filename, chunk_size=30, pool_size=10):
         num_chunks = int(self.get_sizeof(filename) / chunk_size) + 1
         file_info = self.file_info(filename, writable=True)
@@ -87,6 +96,7 @@ class ChunkClient(BaseClient):
             self.write_chunk(file_info, chunk_size * chunk_no,  chunk)
         with file_info['file_handle']:
             pool.map(save_chunk, range(num_chunks))
+
     def upload(self, filename, chunk_size=30, pool_size=10):
         local_filename = filename
         remote_filename = filename.replace('.', '_')

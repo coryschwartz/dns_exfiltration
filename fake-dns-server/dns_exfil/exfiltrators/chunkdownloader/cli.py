@@ -1,3 +1,5 @@
+import click
+
 from dns_exfil.exfiltrators.chunkdownloader.client import ChunkClient
 
 @click.command(name='download')
@@ -27,8 +29,8 @@ def chunk_upload(chunk_size, domain, connect, filename):
     client = ChunkClient(domain, connect)
     client.upload(filename, chunk_size)
 
-@click.group()
-def chunk_client(name='chunk'):
+@click.group(name='chunk')
+def chunk_client():
     pass
 
 
