@@ -82,7 +82,7 @@ class InterceptDefaultResolver(BaseResolver):
                 reply = request.reply()
                 try:
                     records = self.upstream_cache[(reply.q.qname, reply.q.qtype)]
-                except KeyError
+                except KeyError:
                     upstream_response = self.interceptor.resolve(request, handler)
                     self.upstream_cache[(reply.q.qname, reply.q.qtype)] = upstream_response.rr
                     records = upstream_response.rr
