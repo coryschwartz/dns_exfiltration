@@ -112,15 +112,16 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             real_domain_name = '.'.join(str(qname).split('.')[-3:])
             if self.use_upstream_cache:
                 try:
-                    records = self.upstream_cache[(real_domain_name, qtype)]
+                    real_records = self.upstream_cache[(real_domain_name, qtype)]
                 except KeyError:
                     real_request = dnslib.DNSRecord()
                     real_request.add_question(dnslib.DNSQuestion(real_domain_name, qtype))
                     real_reply = self.interceptor.resolve(real_request, handler)
                     self.upstream_cache[(real_domain_name, qtype)] = real_reply.rr
+                    real_records = real_reply.rr
             else:
                     real_reply = self.interceptor.resolve(real_request, handler)
-            real_records = real_reply.rr
+                    real_records = real_reply.rr
 
             return_reply = request.reply()
             for record in real_records:
