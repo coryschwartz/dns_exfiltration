@@ -23,15 +23,15 @@ def chunk_list(domain, connect):
 @click.option('--domain', default='example.com', help='ending domain name')
 @click.argument('connect')
 @click.argument('filename')
-def chunk_upload(chunk_size, domain, connect, filename)
+def chunk_upload(chunk_size, domain, connect, filename):
     client = ChunkClient(domain, connect)
     client.upload(filename, chunk_size)
 
 @click.group()
-def chunk():
+def chunk_client(name='chunk'):
     pass
 
 
-chunk.add_command(chunk_download)
-chunk.add_command(chunk_list)
-chunk.add_command(chunk_upload)
+chunk_client.add_command(chunk_download)
+chunk_client.add_command(chunk_list)
+chunk_client.add_command(chunk_upload)

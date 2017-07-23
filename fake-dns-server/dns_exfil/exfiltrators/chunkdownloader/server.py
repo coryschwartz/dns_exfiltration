@@ -50,7 +50,7 @@ class ChunkDownloader(InterceptAppendResolver):
             encoded_data = fields[0].encode('utf-8')
             chunk_num = int(fields[1][1:])
             chunk_size = int(fields[2][1:])
-            filename = fields[3][1]
+            filename = fields[3]
             data = base64.b64decode(encoded_data)
         except:
             raise CannotExfiltrateError
