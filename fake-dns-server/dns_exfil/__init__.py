@@ -32,6 +32,15 @@ config = {
             'basedir': getcwd(),
             'ip': '192.168.1.1',
             'ttl': 6000
+        },
+        'headerappendresolver': {
+            'basedir': getcwd(),
+            'ip': '192.168.1.1',
+            'ttl': 0,
+            'domains': {
+                'def.con': 'defconfile',
+                'cas.net': 'casnetfile'
+            }
         }
     },
     'client': {

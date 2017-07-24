@@ -133,6 +133,22 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             return_reply = self.interceptor.resolve(request, handler)
         return return_reply
 
+class BaseHeaderInterceptResolver(InterceptDefaultResolver):
+    def __init__(self):
+        super().__init__()
+        self.interceptor = InterceptResolver(**config['server']['upstream'])
+    def answer(self, header):
+        '''override this'''
+        pass
+    @printerrors
+    def resolve(self, request, handler):
+        if request.q.qname in self.context.domains.keys():
+            reply = request.reply()
+            filename = '/'.join([self.context['basedir'], self.context['domains'][request.q.qname]])
+            reply.add_answer(self.answer(request.header, filename))
+            return reply
+        else:
+            return self.interceptor.resolve(request, handler)
 
 def start_server(resolver):
     server = DNSServer(resolver=resolver, **config['server']['service'])

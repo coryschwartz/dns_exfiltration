@@ -1,11 +1,11 @@
 from dns_exfil.exfiltrators.botexfiltrator.server import BotExfiltrator
 from dns_exfil.exfiltrators.chunkdownloader.server import ChunkDownloader
+from dns_exfil.exfiltrators.headersonly.cli import headersonly
 from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
 import click
 import os
-
 
 @click.command()
 @click.option('--domain', default=config['server']['botexfiltrator']['domain'],
@@ -37,3 +37,4 @@ def main():
 
 main.add_command(bot)
 main.add_command(chunk)
+main.add_command(headersonly)
