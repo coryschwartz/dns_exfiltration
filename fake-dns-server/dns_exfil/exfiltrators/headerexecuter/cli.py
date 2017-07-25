@@ -4,7 +4,7 @@ from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
 
-@click.command(name='executor')
+@click.command(name='executer')
 def headerexecuter():
     context = config['server']['headerexecuter']
     context.update(locals())

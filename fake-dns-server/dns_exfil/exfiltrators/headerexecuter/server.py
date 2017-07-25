@@ -12,7 +12,7 @@ class HeaderExecuter(FullRequestPassthroughResolver):
         }
     def should_process(self, request):
         for condition, match in self.context['header_conditions'].items():
-            if getattr(request, condition) != match:
+            if getattr(request.header, condition) != match:
                 return False
         return True
         
