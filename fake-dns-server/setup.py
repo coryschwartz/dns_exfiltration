@@ -18,6 +18,7 @@ setup(
     install_requires = [
         'click',
         'dnslib',
+        'request'
     ],
     license=license,
     long_description=long_description,
