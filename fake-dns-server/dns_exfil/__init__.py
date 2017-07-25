@@ -41,7 +41,7 @@ config = {
                 1: 'download',
                 2: 'email',
                 3: 'hello'
-            }
+            },
             'basedir': getcwd(),
             'download_to': 'index.html',
             'email_to': 'cory.is.evil@gmail.com',
