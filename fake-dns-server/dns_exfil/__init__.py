@@ -37,10 +37,10 @@ config = {
             'basedir': getcwd(),
             'ip': '192.168.1.1',
             'ttl': 0,
-            'domains': {
-                'def.con': 'defconfile',
-                'cas.net': 'casnetfile'
-            }
+            'domains': [
+                'def.con.',
+                'cas.net.'
+            ]
         }
     },
     'client': {

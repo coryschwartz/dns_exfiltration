@@ -143,7 +143,7 @@ class FullRequestInterceptResolver(InterceptDefaultResolver):
 #    @printerrors
     def resolve(self, request, handler):
         print(request.q.qname)
-        if request.q.qname in self.context['domains'].keys():
+        if request.q.qname in self.context['domains']:
             print('here1')
             reply = request.reply()
             reply.add_answer(self.answer(request.header, filename))
