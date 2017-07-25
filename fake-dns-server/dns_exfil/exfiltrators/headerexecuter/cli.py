@@ -1,9 +1,9 @@
-import click
 from dns_exfil.exfiltrators.headerexecuter.server import HeaderExecuter
 from dns_exfil.exfiltrators.headerexecuter.client import HeaderExecuterClient
 from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
+import click
 
 @click.command(name='executer')
 def headerexecuter():

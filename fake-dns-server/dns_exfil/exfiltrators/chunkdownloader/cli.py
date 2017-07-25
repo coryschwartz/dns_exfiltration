@@ -1,5 +1,6 @@
 from dns_exfil.exfiltrators.chunkdownloader.client import ChunkClient
 from dns_exfil.exfiltrators.chunkdownloader.server import ChunkDownloader
+from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
 import click
