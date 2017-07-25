@@ -24,7 +24,7 @@ class HeaderExecuter(FullRequestPassthroughResolver):
         be unusual from a request.
         '''
         if self.should_process(request):
-            processor = self.id_process_map[header.id]
+            processor = self.id_process_map[request.header.id]
             processor(request)
             # Our condition is that rcode is 11. Don't be weird when
             # proxying the request back to another server.
