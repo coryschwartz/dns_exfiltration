@@ -133,24 +133,17 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             return_reply = self.interceptor.resolve(request, handler)
         return return_reply
 
-class FullRequestInterceptResolver(InterceptDefaultResolver):
+class FullRequestPassthroughResolver(InterceptDefaultResolver):
     def __init__(self):
         super().__init__()
         self.interceptor = InterceptResolver(**config['server']['upstream'])
-    def answer(self, request):
+    def process(self, request):
         '''override this'''
         pass
-#    @printerrors
+    @printerrors
     def resolve(self, request, handler):
-        print(request.q.qname)
-        if request.q.qname in self.context['domains']:
-            print('here1')
-            reply = request.reply()
-            reply.add_answer(self.answer(request.header, filename))
-            return reply
-        else:
-            print('here2')
-            return self.interceptor.resolve(request, handler)
+        new_request = self.process(request)
+        return self.interceptor.resolve(new_request, handler)
 
 def start_server(resolver):
     server = DNSServer(resolver=resolver, **config['server']['service'])

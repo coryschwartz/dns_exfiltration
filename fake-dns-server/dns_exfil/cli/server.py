@@ -1,6 +1,6 @@
 from dns_exfil.exfiltrators.botexfiltrator.server import BotExfiltrator
 from dns_exfil.exfiltrators.chunkdownloader.server import ChunkDownloader
-from dns_exfil.exfiltrators.headersonly.cli import headersonly
+from dns_exfil.exfiltrators.headerexecuter.cli import headerexecuter
 from dns_exfil.exfiltrators.base.server import start_server
 from dns_exfil import config
 
@@ -37,4 +37,4 @@ def main():
 
 main.add_command(bot)
 main.add_command(chunk)
-main.add_command(headersonly)
+main.add_command(headerexecuter)
