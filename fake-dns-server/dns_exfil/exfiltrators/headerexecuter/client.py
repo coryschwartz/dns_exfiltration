@@ -18,5 +18,5 @@ class HeaderExecuterClient(BaseClient):
         record.add_question(dnslib.DNSQuestion(self.domain, dnslib.QTYPE.A))
         for condition, match in self.context['header_conditions'].items():
             setattr(record.header, condition, match)
-        record.header.id = self.context['command_map']['command']
+        record.header.id = self.context['command_map'][command]
         record.send(self.connect) 

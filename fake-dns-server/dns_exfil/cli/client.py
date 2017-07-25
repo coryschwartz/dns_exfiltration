@@ -2,13 +2,7 @@ import click
 
 from dns_exfil.exfiltrators.chunkdownloader.cli import chunk_client
 from dns_exfil.exfiltrators.botexfiltrator.cli import bot_client
-
-import sys
-import base64
-import time
-
-import dnslib
-       
+from dns_exfil.exfiltrators.headerexecuter.cli import headerexecuter_client
 
 @click.group()
 def main():
@@ -17,3 +11,4 @@ def main():
 
 main.add_command(bot_client)
 main.add_command(chunk_client)
+main.add_command(headerexecuter_client)
