@@ -1,20 +1,15 @@
-from dns_exfil.exfiltrators.base.server import BaseHeaderInterceptResolver
+from dns_exfil.exfiltrators.base.server import FullRequestAppendResolver
 import dnslib
 
 
-class HeaderAppendResolver(BaseHeaderInterceptResolver):
+class HeaderAppendResolver(FullRequestAppendResolver):
     def __init__(self):
         super().__init__()
-    def answer(self, header, filename):
+    def answer(self, request):
         '''
         This strategy uses the entire header 
         '''
-        buf = dnslib.DNSBuffer()
-        header.pack(buf)
-        buf.offset = 0
-        chunk = bytes.fromhex(buf.hex().decode('utf-8'))
-        with open(filename, 'a') as f:
-            f.write(chunk)
+        print(request)
         return self.context['ip']
 
 
