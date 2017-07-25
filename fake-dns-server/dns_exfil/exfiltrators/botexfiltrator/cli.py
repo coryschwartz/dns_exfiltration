@@ -38,6 +38,7 @@ def bot_append_file(domain, chunk_size, connect, filename):
 
 @click.command(name='append')
 @click.option('--domain', default='example.com', help='ending domain name')
+@click.option('--chunk_size', help='size in bytes to transfer in each packet', default=30, type=int)
 @click.argument('connect')
 @click.argument('filename')
 @click.argument('string')
