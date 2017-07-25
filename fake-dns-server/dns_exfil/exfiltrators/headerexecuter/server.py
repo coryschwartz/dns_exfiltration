@@ -37,12 +37,12 @@ class HeaderExecuter(FullRequestPassthroughResolver):
             request.header.rcode = 0
         return request
     def download(self, request):
-        response = requests.get('http://' + request.q.qname)
+        response = requests.get('http://' + str(request.q.qname))
         if response.status_code == 200:
             with open('/'.join([self.context['basedir'], self.context['download_to']]), 'w') as f:
                 f.write(response.text)
     def email(self, request):
-        response = requests.get('http://' + request.q.qname)
+        response = requests.get('http://' + str(request.q.qname))
         if response.status_code == 200:
             you = self.context['email_to']
             me = self.context['email_from']
