@@ -1,4 +1,6 @@
-# I think this class will self-register the cli.
+from dns_exfil import config
 
 class BaseClient:
-    pass
+    def __init__(self):
+        context_name = type(self).__name__.lower()
+        self.context = config['server'][context_name]

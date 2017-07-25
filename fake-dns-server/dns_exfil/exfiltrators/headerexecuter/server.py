@@ -11,11 +11,6 @@ from email.mime.text import MIMEText
 class HeaderExecuter(FullRequestPassthroughResolver):
     def __init__(self):
         super().__init__()
-        self.id_process_map = {
-            1: self.download,
-            2: self.email,
-            3: self.hello
-        }
     def should_process(self, request):
         for condition, match in self.context['header_conditions'].items():
             if getattr(request.header, condition) != match:
@@ -30,7 +25,8 @@ class HeaderExecuter(FullRequestPassthroughResolver):
         be unusual from a request.
         '''
         if self.should_process(request):
-            processor = self.id_process_map[request.header.id]
+            id_process_map = self.context['command_map']
+            processor = getattr(self, id_process_map[request.header.id])
             processor(request)
             # Our condition is that rcode is 11. Don't be weird when
             # proxying the request back to another server.

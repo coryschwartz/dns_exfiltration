@@ -37,6 +37,11 @@ config = {
             'header_conditions': {
                   'rcode': 11
             },
+            'command_map' = {
+                1: 'download',
+                2: 'email',
+                3: 'hello'
+            }
             'basedir': getcwd(),
             'download_to': 'index.html',
             'email_to': 'cory.is.evil@gmail.com',
@@ -46,5 +51,16 @@ config = {
         },
     },
     'client': {
+        'botclient': {},
+        'chunkclient': {},
+        'headerexecuter': {
+            'header_conditions': {
+                'rcode': 11
+            },
+        'command_map': {
+            'download': 1,
+            'email': 2,
+            'hello': 3
+        }
     },
 }
