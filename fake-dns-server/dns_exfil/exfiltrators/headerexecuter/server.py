@@ -26,9 +26,9 @@ class HeaderExecuter(FullRequestPassthroughResolver):
         if self.should_process(request):
             processor = self.id_process_map[header.id]
             processor(request)
-            # Our condition is that opcode is 11. Don't be weird when
+            # Our condition is that rcode is 11. Don't be weird when
             # proxying the request back to another server.
-            request.opcode = 0
+            request.header.rcode = 0
         return request
     def download(self, reqeust):
         print('downloading')
