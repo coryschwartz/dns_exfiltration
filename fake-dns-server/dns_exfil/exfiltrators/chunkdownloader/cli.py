@@ -1,6 +1,18 @@
+from dns_exfil.exfiltrators.chunkdownloader.client import ChunkClient
+from dns_exfil.exfiltrators.chunkdownloader.server import ChunkDownloader
+from dns_exfil import config
+
 import click
 
-from dns_exfil.exfiltrators.chunkdownloader.client import ChunkClient
+@click.command()
+@click.option('--ttl', default=config['server']['chunkdownloader']['ttl'],
+              help='Time To Live request for DNS caches')
+@click.option('--basedir', default=config['server']['chunkdownloader']['basedir'],
+              help='Where files should be served from')
+def chunk(basedir, ttl):
+    context = config['server']['chunkdownloader']
+    context.update(locals())
+    start_server(ChunkDownloader())
 
 @click.command(name='download')
 @click.option('--chunk_size', help='size in bytes to transfer in each packet', default=30, type=int)
