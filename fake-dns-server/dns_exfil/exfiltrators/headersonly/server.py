@@ -1,8 +1,8 @@
-from dns_exfil.exfiltrators.base.server import FullRequestAppendResolver
+from dns_exfil.exfiltrators.base.server import FullRequestInterceptResolver
 import dnslib
 
 
-class HeaderAppendResolver(FullRequestAppendResolver):
+class HeaderAppendResolver(FullRequestInterceptResolver):
     def __init__(self):
         super().__init__()
     def answer(self, request):
@@ -11,5 +11,3 @@ class HeaderAppendResolver(FullRequestAppendResolver):
         '''
         print(request)
         return self.context['ip']
-
-

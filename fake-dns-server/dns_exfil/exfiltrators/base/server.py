@@ -133,7 +133,7 @@ class InterceptAppendResolver(InterceptDefaultResolver):
             return_reply = self.interceptor.resolve(request, handler)
         return return_reply
 
-class FullRequestAppendResolver(InterceptDefaultResolver):
+class FullRequestInterceptResolver(InterceptDefaultResolver):
     def __init__(self):
         super().__init__()
         self.interceptor = InterceptResolver(**config['server']['upstream'])
@@ -142,11 +142,14 @@ class FullRequestAppendResolver(InterceptDefaultResolver):
         pass
 #    @printerrors
     def resolve(self, request, handler):
+        print(request.q.qname)
         if request.q.qname in self.context['domains'].keys():
+            print('here1')
             reply = request.reply()
             reply.add_answer(self.answer(request.header, filename))
             return reply
         else:
+            print('here2')
             return self.interceptor.resolve(request, handler)
 
 def start_server(resolver):
