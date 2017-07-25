@@ -57,10 +57,11 @@ config = {
             'header_conditions': {
                 'rcode': 11
             },
-        'command_map': {
-            'download': 1,
-            'email': 2,
-            'hello': 3
+            'command_map': {
+                'download': 1,
+                'email': 2,
+                'hello': 3
+            }
         }
     },
 }
