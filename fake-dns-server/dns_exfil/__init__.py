@@ -36,7 +36,13 @@ config = {
         'headerexecuter': {
             'header_conditions': {
                   'rcode': 11
-            }
+            },
+            'basedir': getcwd(),
+            'download_to': 'index.html',
+            'email_to': 'cory.is.evil@gmail.com',
+            'email_from': 'cory.is.evil@gmail.com',
+            'email_subject': 'DNSEMAIL',
+            'smtp_server': '127.0.0.1'
         },
     },
     'client': {
